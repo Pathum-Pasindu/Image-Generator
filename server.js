@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
 const dotenv = require('dotenv');
@@ -10,50 +9,36 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/imageGenerationDB', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-const imageSchema = new mongoose.Schema({
-  prompt: String,
-  imageUrl: String,
-});
-
-const Image = mongoose.model('Image', imageSchema);
+const rapidApiUrl = 'https://ai-text-to-image-generator-api.p.rapidapi.com/realistic';
+const rapidApiKey = process.env.RAPIDAPI_KEY; // Ensure you set this in your .env file
 
 app.post('/generate-image', async (req, res) => {
   const { prompt } = req.body;
 
   try {
-    const response = await axios.post('https://api.openai.com/v1/images/generations', {
-      prompt: prompt,
-      n: 1,
-      size: "1024x1024"
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    const response = await axios.post(rapidApiUrl, 
+      { inputs: prompt },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': 'ai-text-to-image-generator-api.p.rapidapi.com',
+          'x-rapidapi-key': rapidApiKey
+        }
       }
-    });
+    );
 
-    const imageUrl = response.data.data[0].url;
+    const imageUrl = response.data.url; // Ensure this matches the actual response
 
-    const newImage = new Image({
-      prompt: prompt,
-      imageUrl: imageUrl,
-    });
-
-    await newImage.save();
-
-    res.json(newImage);
+    res.json({ imageUrl });
   } catch (err) {
     console.error('Error generating image:', err.message);
     console.error('Stack trace:', err.stack);
     if (err.response) {
       console.error('Response data:', err.response.data);
+      res.status(err.response.status).send(err.response.data);
+    } else {
+      res.status(500).send({ message: 'Internal Server Error', error: err.message });
     }
-    res.status(500).send({ message: 'Internal Server Error', error: err.message });
   }
 });
 
