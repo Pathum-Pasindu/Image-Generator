@@ -1,6 +1,6 @@
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import axios from 'axios';
-import './ImageGeneration.css'; 
+import './ImageGeneration.css';
 
 const ImageGeneration = () => {
   const [prompt, setPrompt] = useState('');
@@ -10,17 +10,29 @@ const ImageGeneration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
+
+    if (!prompt.trim()) {
+      setError('Prompt cannot be empty.');
+      return;
+    }
+
+    setLoading(true); // Start loading animation
+    setError(''); // Clear any previous errors
 
     try {
+      console.log('Sending request to backend with prompt:', prompt);
+
       const response = await axios.post('http://localhost:8000/generate-image', { prompt });
+
+      // Log the server's response
+      console.log('Server response:', response.data);
+
       setImageUrl(response.data.imageUrl);
-      setError('');
     } catch (err) {
       console.error('Error generating image:', err.message);
       setError('Error generating image. Please try again.');
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false); // Stop loading animation
     }
   };
 
@@ -34,7 +46,7 @@ const ImageGeneration = () => {
       )}
       {!loading && (
         <div className="image-gen-wrapper">
-          <h1 className="neon-text">Prompt your Idea to make visualize</h1>
+          <h1 className="neon-text">Prompt your Idea to make it visual</h1>
           <form onSubmit={handleSubmit}>
             <input
               type="text"

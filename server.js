@@ -1,18 +1,21 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const logoGeneratorRoute = require('./routes/imageRoutes');
-const imageRoutes = require('./routes/imageRoutes');
+const imageRoutes = require('./routes/imageRoutes'); // Importing the routes
 
-dotenv.config(); // Load environment variables
+dotenv.config(); // Load environment variables from .env file
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// Middleware setup
+app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json()); // Parse JSON bodies
 
-app.use('/generate-image', imageRoutes);
+// Register routes
+app.use('/generate-image', imageRoutes); // Use the image generation routes
 
-app.listen(8000, () => {
-  console.log('Server is running on port 8000');
+// Start the server
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
