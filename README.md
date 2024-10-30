@@ -1,6 +1,3 @@
-Here’s a **well-structured and polished README.md** ready to use for your GitHub repository:
-
----
 
 # 🌌 AI Image Generator App  
 
